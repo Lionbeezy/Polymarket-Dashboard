@@ -1,5 +1,164 @@
 <!DOCTYPE html>
-<html><head><meta http-equiv="refresh" content="5"></head>
-<body style="background:#07071a;color:#888;font-family:monospace;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center">
-<div><div style="font-size:30px">⏳</div><div style="margin-top:12px;color:#a5b4fc">Dashboard loading...<br><span style="font-size:11px;color:#444">Auto-refreshes every 5 seconds</span></div></div>
-</body></html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Polymarket · Trending Certainty Markets</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#07071a;color:#e0e0f0;font-family:'Space Mono',monospace;min-height:100vh}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#222244;border-radius:2px}
+.header{position:sticky;top:0;z-index:10;background:#080820ee;backdrop-filter:blur(10px);border-bottom:1px solid #ffffff08;padding:18px 18px 14px}
+.header-row{display:flex;align-items:center;justify-content:space-between}
+.dot{width:7px;height:7px;border-radius:50%;background:#00ff88;display:inline-block;margin-right:8px}
+.label{font-size:10px;letter-spacing:3px;color:#6366f1;font-weight:700}
+.title{font-family:'DM Sans',sans-serif;font-size:20px;font-weight:700;letter-spacing:-0.5px;margin-top:3px}
+.updated{font-size:10px;color:#333;margin-top:5px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.stat{background:#0d0d20;border:1px solid #ffffff07;border-radius:9px;padding:9px 12px}
+.stat-label{font-size:8px;letter-spacing:1.5px;color:#444}
+.stat-value{font-family:'DM Sans',sans-serif;font-size:17px;font-weight:700;margin-top:2px}
+.filters{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.filter-btn{padding:5px 12px;border-radius:20px;border:1px solid #ffffff0f;background:transparent;color:#555;font-size:11px;font-weight:700;cursor:pointer;font-family:monospace;letter-spacing:0.5px;transition:all .2s}
+.filter-btn.active{border-color:#6366f188;background:#6366f118;color:#a5b4fc}
+.cards{padding:14px 14px 40px;display:flex;flex-direction:column;gap:9px}
+.card{background:#0c0c1d;border-radius:12px;padding:15px 16px;position:relative;animation:fadeUp 0.3s ease both}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+.question{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;line-height:1.45;color:#dde;flex:1}
+.price-block{text-align:right;flex-shrink:0}
+.price{font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;line-height:1}
+.arrow{font-size:10px;margin-top:3px}
+.badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:10px;margin-bottom:8px}
+.bar-labels{display:flex;justify-content:space-between;font-size:11px;color:#777;margin-bottom:4px;font-family:monospace}
+.bar-track{height:5px;background:#1a1a2e;border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px}
+.meta{display:flex;gap:14px;margin-top:10px;font-size:10px;color:#444;font-family:monospace}
+.meta b{color:#888}
+.footer{margin:0 14px 20px;padding:12px 14px;background:#0d0d20;border-radius:10px;border:1px solid #ffffff07;font-size:10px;color:#333;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-row">
+    <div>
+      <div><span class="dot"></span><span class="label">POLYMARKET</span></div>
+      <div class="title">Trending Certainty Markets</div>
+    </div>
+    <div style="text-align:right;font-size:10px;color:#444">
+      <div>LIVE DATA</div>
+      <div style="color:#555;margin-top:2px">Apr 12, 2026</div>
+    </div>
+  </div>
+  <div class="updated">Sourced from Polymarket · Sorted by directional certainty</div>
+  <div class="stats">
+    <div class="stat"><div class="stat-label">24H VOLUME</div><div class="stat-value" style="color:#a5b4fc">$483M</div></div>
+    <div class="stat"><div class="stat-label">STRONG SIGNAL</div><div class="stat-value" style="color:#fbbf24">12</div></div>
+    <div class="stat"><div class="stat-label">AVG CERTAINTY</div><div class="stat-value" style="color:#34d399">68%</div></div>
+  </div>
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterCards(this,'all')">ALL</button>
+    <button class="filter-btn" onclick="filterCards(this,'bullish')">▲ YES≥65%</button>
+    <button class="filter-btn" onclick="filterCards(this,'bearish')">▼ NO≥65%</button>
+    <button class="filter-btn" onclick="filterCards(this,'strong')">⚡ ≥80%</button>
+    <button class="filter-btn" style="margin-left:auto" onclick="sortCards(this,'certainty')">CERTAINTY</button>
+    <button class="filter-btn" onclick="sortCards(this,'volume')">VOLUME</button>
+  </div>
+</div>
+
+<div class="cards" id="cards"></div>
+
+<div class="footer">
+  📡 Data: Polymarket.com · April 12, 2026 · Prices show YES probability (0–100¢)<br>
+  ⚡ Strong Signal = markets at ≥80% or ≤20% certainty · Sorted furthest from 50/50 first
+</div>
+
+<script>
+const DATA = [
+  {q:"Péter Magyar wins 2026 Hungarian election?", p:0.99, vol:51000000, liq:8200000},
+  {q:"Will Tisza win at least 130 seats?", p:0.99, vol:12000000, liq:2400000},
+  {q:"Viktor Orbán loses 2026 Hungarian election?", p:0.99, vol:14000000, liq:2900000},
+  {q:"Hungary Election: TISZA wins constitutional majority?", p:0.98, vol:18000000, liq:3100000},
+  {q:"2026 FIDE Candidates Tournament winner: Javokhir Sindarov?", p:0.98, vol:3900000, liq:820000},
+  {q:"Polymarket IPO by June 30, 2026?", p:0.02, vol:967000, liq:340000},
+  {q:"SpaceX Starship: Successful splashdown next launch?", p:0.05, vol:1000000, liq:290000},
+  {q:"New pandemic declared in 2026?", p:0.08, vol:1100000, liq:390000},
+  {q:"2026 FIFA World Cup Winner — Argentina?", p:0.09, vol:25200000, liq:7100000},
+  {q:"Will voter turnout be 77–80% in Hungarian parliamentary election?", p:0.90, vol:9400000, liq:1800000},
+  {q:"US unemployment above 3.5% monthly?", p:0.85, vol:521000, liq:180000},
+  {q:"Fed rate cut April 30, 2026?", p:0.15, vol:9800000, liq:3200000},
+  {q:"Iran nuclear deal by June 30, 2026?", p:0.12, vol:40000000, liq:6500000},
+  {q:"S&P 500 closes below $6,000 end of 2026?", p:0.41, vol:18300, liq:9000},
+  {q:"US x Iran ceasefire: April 22?", p:0.08, vol:22800000, liq:4100000},
+  {q:"US x Iran ceasefire: April 30?", p:0.14, vol:22800000, liq:4100000},
+  {q:"US x Iran ceasefire: May 31?", p:0.28, vol:22800000, liq:4100000},
+  {q:"Rory McIlroy wins 2026 Masters Tournament?", p:0.36, vol:120000000, liq:22000000},
+  {q:"Justin Rose wins 2026 Masters Tournament?", p:0.37, vol:120000000, liq:18000000},
+  {q:"Fed rate cut May 31, 2026?", p:0.28, vol:2000000, liq:980000},
+  {q:"Oil price above $80/barrel by May 31?", p:0.28, vol:10000000, liq:3800000},
+  {q:"2026 FIFA World Cup Winner — Spain?", p:0.17, vol:25200000, liq:7100000},
+  {q:"2026 FIFA World Cup Winner — France?", p:0.15, vol:25200000, liq:7100000},
+  {q:"J.D. Vance wins 2028 presidential election?", p:0.19, vol:5000000, liq:1900000},
+  {q:"Supreme Court vacancy in 2026?", p:0.35, vol:2300000, liq:780000},
+  {q:"English Premier League Winner 2025/26?", p:0.65, vol:8400000, liq:2600000},
+  {q:"Gavin Newsom wins 2028 Democratic nomination?", p:0.38, vol:4800000, liq:1600000},
+  {q:"Fed rate cut to 3.25% by end of 2026?", p:0.68, vol:1000000, liq:420000},
+  {q:"Texas Republican Senate Primary: Ken Paxton wins?", p:0.61, vol:18000000, liq:3200000},
+  {q:"2026 NBA Champion — favourite wins?", p:0.55, vol:3200000, liq:1100000},
+].sort((a,b) => Math.abs(b.p-0.5) - Math.abs(a.p-0.5));
+
+let currentFilter = 'all', currentSort = 'certainty';
+
+function fmt(v){return v>=1e6?'$'+(v/1e6).toFixed(1)+'M':v>=1e3?'$'+(v/1e3).toFixed(0)+'K':'$'+Math.round(v)}
+
+function render(){
+  let d = DATA.filter(m => {
+    if(currentFilter==='bullish') return m.p>=0.65;
+    if(currentFilter==='bearish') return m.p<=0.35;
+    if(currentFilter==='strong') return m.p>=0.8||m.p<=0.2;
+    return true;
+  });
+  if(currentSort==='volume') d.sort((a,b)=>b.vol-a.vol);
+  else d.sort((a,b)=>Math.abs(b.p-0.5)-Math.abs(a.p-0.5));
+
+  document.getElementById('cards').innerHTML = d.map((m,i)=>{
+    const pct=Math.round(m.p*100);
+    const isBull=m.p>=0.65,isBear=m.p<=0.35,isStrong=m.p>=0.8||m.p<=0.2;
+    const c=pct>=80?'#00ff88':pct>=65?'#aaff44':pct<=20?'#ff4466':pct<=35?'#ff8844':'#ffcc00';
+    const border=isStrong?`1px solid ${isBull?'#00ff8855':'#ff446655'}`:'1px solid #ffffff0c';
+    const glow=isStrong?`0 0 18px ${isBull?'#00ff8810':'#ff446810'}`:'none';
+    const ac=isBull?'#00ff88':isBear?'#ff4466':'#ffcc00';
+    const badge=isStrong?`<span class="badge" style="color:${isBull?'#00ff88':'#ff4466'};background:${isBull?'#00ff8815':'#ff446615'};border:1px solid ${isBull?'#00ff8835':'#ff446635'}">⚡ ${isBull?'STRONG YES':'STRONG NO'}</span>`:'';
+    return `<div class="card" style="border:${border};box-shadow:${glow};animation-delay:${Math.min(i*0.03,0.6)}s">
+      <div class="card-top">
+        <div class="question">${m.q}</div>
+        <div class="price-block"><div class="price" style="color:${ac}">${pct}¢</div><div class="arrow" style="color:${ac}">${isBull?'▲':isBear?'▼':'◆'} ${isBull?'YES':isBear?'NO':'~'}</div></div>
+      </div>
+      ${badge}
+      <div class="bar-labels"><span>YES</span><span style="color:${c};font-weight:700">${pct}%</span><span>NO</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${c}55,${c})"></div></div>
+      <div class="meta"><span>24H <b>${fmt(m.vol)}</b></span><span>LIQ <b>${fmt(m.liq)}</b></span></div>
+    </div>`;
+  }).join('');
+}
+
+function filterCards(btn,f){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+function sortCards(btn,s){
+  currentSort=s;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>
