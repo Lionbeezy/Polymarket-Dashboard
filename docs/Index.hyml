@@ -1,0 +1,5 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="refresh" content="5"></head>
+<body style="background:#07071a;color:#888;font-family:monospace;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center">
+<div><div style="font-size:30px">⏳</div><div style="margin-top:12px;color:#a5b4fc">Dashboard loading...<br><span style="font-size:11px;color:#444">Auto-refreshes every 5 seconds</span></div></div>
+</body></html>
